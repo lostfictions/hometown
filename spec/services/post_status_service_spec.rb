@@ -239,6 +239,26 @@ RSpec.describe PostStatusService, type: :service do
     expect(status2.id).to eq status1.id
   end
 
+  it 'creates a federated status when replying to a federated status and federation is not specified' do
+    in_reply_to_status = Fabricate(:status)
+    account = Fabricate(:account)
+    text = "test status update"
+
+    status = subject.call(account, text: text, thread: in_reply_to_status)
+
+    expect(status.local_only).to be_falsey
+  end
+
+  it 'creates a local status when replying to a local status and federation is not specified' do
+    in_reply_to_status = create_status_with_options(local_only: true)
+    account = Fabricate(:account)
+    text = "test status update"
+
+    status = subject.call(account, text: text, thread: in_reply_to_status)
+
+    expect(status.local_only).to eq true
+  end
+
   def create_status_with_options(**options)
     subject.call(Fabricate(:account), options.merge(text: 'test'))
   end
